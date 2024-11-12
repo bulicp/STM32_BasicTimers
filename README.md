@@ -76,13 +76,40 @@ Important configuration bits in TIMx_CR1 include:
 Let's break down the configuration of TIM3 timer for generating a 1 kHz Update Event (UEV). We will also explain each step in detail based on the APB1 clock frequency of 64 MHz.
 
 We use the following formula to calculate the UEV's frequency:
+
 UEV Frequency = Input Clock Frequency / [(PSC + 1) x (ARR + 1)]
+
 We need to configure PSC and ARR to achieve UEV frequency = 1 kHz.
 
 To achieve a UEV frequency of 1 kHz (assuming APB1 tiimer frequency of 64 MH ), we first solve for (PSC + 1) × (ARR + 1):
+
 (PSC+1)x(ARR+1) = 64MHz/1kHz = 64000000/1000 = 64000
+
 We can choose ARR = 639 and PSC = 99 to satisfy this equation because:
+
 (99+1)x(639+1) = 64000.
+
+
+```c
+volatile uint32_t* pTIM3_CR1 = (uint32_t*)(0x40000400);
+volatile uint32_t* pTIM3_CNT = (uint32_t*)(0x40000424);
+volatile uint32_t* pTIM3_PSC = (uint32_t*)(0x40000428);
+volatile uint32_t* pTIM3_ARR = (uint32_t*)(0x4000042C);
+__HAL_RCC_TIM3_CLK_ENABLE();
+
+// Set ARR to 639 (this gives 640 total counts)
+*pTIM3_ARR = 639;
+
+// Set PSC to 99 (this divides the clock by 100, resulting in 1 kHz)
+*pTIM3_PSC = 99;
+
+// Set ARPE (Auto-Reload Preload Enable)
+*pTIM3_CR1 = *pTIM3_CR1 | (1 << 7);
+
+// Enable the timer counter
+*pTIM3_CR1 = *pTIM3_CR1 | (1 << 0);
+
+```
 
 
 
