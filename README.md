@@ -127,8 +127,48 @@ __HAL_RCC_TIM3_CLK_ENABLE();
 
 // Enable the timer counter
 *pTIM3_CR1 = *pTIM3_CR1 | (1 << 0);
-
 ```
+
+
+Now let's break down the code step-by-step:
+```c
+volatile uint32_t* pTIM3_CR1 = (uint32_t*)(0x40000400);
+volatile uint32_t* pTIM3_CNT = (uint32_t*)(0x40000424);
+volatile uint32_t* pTIM3_PSC = (uint32_t*)(0x40000428);
+volatile uint32_t* pTIM3_ARR = (uint32_t*)(0x4000042C);
+```
+pTIM3_CR1, pTIM3_CNT, pTIM3_PSC, pTIM3_ARR are pointers to the relevant registers for TIM3. These registers control the timer configuration and operation.
+
+```c
+__HAL_RCC_TIM3_CLK_ENABLE();
+```
+This macro enables the clock for TIM3. It's necessary to initialize and use TIM3 because peripherals in STM32 are clocked by the system's RCC (Reset and Clock Control).
+
+```c
+// Set ARR to 639 (this gives 640 total counts)
+*pTIM3_ARR = 640-1;
+```
+This line sets the ARR value to 639. The timer will count from 0 to 639, which gives a period of 640 clock cycles (since the counter starts at 0). This means the timer will reset and generate UEV every 640 counts.
+
+```c
+// Set PSC to 99 (this divides the clock by 100, resulting in 1 kHz)
+*pTIM3_PSC = 100-1;
+```
+This line sets the PSC value to 99. The prescaler divides the input timer clock by 100. With an input frequency of 64 MHz, this results in a timer clock frequency of 640 kHz.
+
+```c
+// Set ARPE (Auto-Reload Preload Enable)
+*pTIM3_CR1 = *pTIM3_CR1 | (1 << 7);
+```
+This line enables the Auto-Reload Preload Enable (ARPE) bit in CR1. When ARPE is set, the ARR value is updated at the next timer overflow rather than immediately. This is useful for configuring the timer without causing an immediate update that could disrupt timing.
+
+```c
+*pTIM3_CR1 = *pTIM3_CR1 | (1 << 0); // enable CNT
+```
+This line enables the timer by setting the CEN (Counter Enable) bit in the CR1 register. Once this bit is set, the timer starts counting.
+
+
+
 
 
 
