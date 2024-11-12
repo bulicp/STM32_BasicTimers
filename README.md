@@ -71,3 +71,8 @@ Important configuration bits in TIMx_CR1 include:
 - **URS (Update Request Source):** Restricts UEV generation to counter overflow events (TIM_CNT reaching ARR) when set to 1, filtering out other sources of UEVs.
 
 
+## Configuring a Basic Time Base
+
+
+
+
