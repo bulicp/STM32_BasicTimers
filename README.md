@@ -68,7 +68,26 @@ Important configuration bits in TIMx_CR1 include:
 
 - **CEN (Counter Enable):** Enables the timer counter when set. Clearing this bit halts the counter.
 - **UDIS (Update Disable):** Controls whether updates generate a UEV. When set, the timer will not generate UEVs, allowing updates to the ARR and PSC values without restarting the counter.
-- **URS (Update Request Source):** Restricts UEV generation to counter overflow events (TIM_CNT reaching ARR) when set to 1, filtering out other sources of UEVs.
+- **ARPE (Auto-Reload Preload Enable):** Enables the preload of ARR register. 
+
+
+#### ARPE and ARPE Bit in CR1 (Control Register 1)
+
+In STM32 timers, **ARPE** stands for **Auto-Reload Preload Enable**. It is a control feature that allows you to preload the auto-reload register (ARR) value into the timer, ensuring that the next value in the ARR is loaded into the timer immediately when the timer overflows (i.e., reaches its ARR value and resets the counter). This is important for ensuring smooth transitions between timer periods.
+
+The **ARPE** bit is located in the **CR1 (Control Register 1)** of the timer. The setting of this bit controls whether the auto-reload register (ARR) value is updated immediately or only at the timer overflow event.
+
+1. **ARPE = 0 (Disabled)**:
+   - If the ARPE bit is cleared (i.e., ARPE = 0), the value in the **ARR** register is updated **only** when the timer overflows (i.e., the counter reaches the ARR value).
+   - This means that the timer uses the same ARR value until the next timer overflow occurs.
+   - This setting is typically used for cases where you do not need to update the ARR register during the timer's operation.
+
+2. **ARPE = 1 (Enabled)**:
+   - If the ARPE bit is set (i.e., ARPE = 1), the **ARR** register can be updated immediately without waiting for the overflow event.
+   - The new ARR value is preloaded and used immediately in the next timer period, allowing for smooth transitions in time base updates.
+   - This is useful when you want to change the period of the timer dynamically and have the change take effect at the next update event (i.e., when the counter overflows).
+
+Let's say you're using a timer with a specific period set in the **ARR** register, but you want to dynamically change the period of the timer. If **ARPE** is enabled (ARPE = 1), any changes made to the ARR will immediately be used in the next update event. If **ARPE** is disabled (ARPE = 0), changes made to ARR will only take effect after the current update event.
 
 
 ## Configuring a Basic Time Base
@@ -98,10 +117,10 @@ volatile uint32_t* pTIM3_ARR = (uint32_t*)(0x4000042C);
 __HAL_RCC_TIM3_CLK_ENABLE();
 
 // Set ARR to 639 (this gives 640 total counts)
-*pTIM3_ARR = 639;
+*pTIM3_ARR = 640-1;
 
 // Set PSC to 99 (this divides the clock by 100, resulting in 1 kHz)
-*pTIM3_PSC = 99;
+*pTIM3_PSC = 100-1;
 
 // Set ARPE (Auto-Reload Preload Enable)
 *pTIM3_CR1 = *pTIM3_CR1 | (1 << 7);
@@ -110,6 +129,8 @@ __HAL_RCC_TIM3_CLK_ENABLE();
 *pTIM3_CR1 = *pTIM3_CR1 | (1 << 0);
 
 ```
+
+
 
 
 
