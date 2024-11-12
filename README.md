@@ -50,6 +50,16 @@ where:
 
 For example, if the APB1 timer clock is 100 MHz and PSC is set to 99, the timer TIM3 counter clock is reduced to 1 MHz (100 MHz / (99 + 1)).
 
+The "+1" in the equation accounts for the fact that a PSC value of 0 corresponds to no division (a division factor of 1). This is because the prescaler’s counting starts at 0 and continues up to the value in PSC. After reaching PSC, the prescaler resets, which takes (PSC + 1) cycles in total.
+
+By adjusting the prescaler, you can set a wide range of timer frequencies. The prescaler allows you to create slower time bases without adjusting the high-speed system clock and/or increase the duration of timer intervals, useful for creating delays or periodic events.
+Setting an appropriate prescaler value is often the first step when configuring a timer for specific timing requirements. After setting the prescaler, you typically configure the Auto-Reload Register (ARR) to further control the timing period by setting the maximum count limit for the timer. 
+
+The frequency of the Update Event (UEV), or the rate at which the timer counter resets and generates an update event, is determined by both the prescaler (PSC) and the auto-reload register (ARR):
+
+UEV Frequency = Input Clock Frequency / [(PSC + 1) x (ARR + 1)]
+
+
 ### Control Register 1 (TIMx_CR1)
 
 The **Control Register 1 (TIMx_CR1)** configures the timer’s core operating modes and settings. This register includes bits for enabling the timer, selecting the counting direction, and defining update behavior.
